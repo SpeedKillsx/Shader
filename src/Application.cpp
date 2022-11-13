@@ -1,11 +1,13 @@
 #include <iostream>
 #define GLFW_INCLUDE_GLU
 #include <glad/glad.h>
+#include<glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <GLFW/glfw3.h>
 #include  <cstdlib>
 #include<shader.hpp>
-
-
+using namespace std;
+using namespace glm;
 void Resize(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
@@ -81,7 +83,15 @@ int main()
 	ShaderProgram = LoadShaders("Dependecies/shader/SimpleVertexShader.vertexshader","Dependecies/shader/SimpleFragmentShader.fragmentshader");
 
 
-
+	mat4 Projection = perspective(radians(55.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	mat4 View = lookAt(vec3(2, 5, 5), vec3(0, 0, 0), vec3(0, 1, 0));
+	mat4 Model = mat4(1.0f);
+	Model = translate(Model, vec3(-1.0f, 0.5f, 1.2f));
+	Model = scale(Model, vec3(2.5f, 2.5f, 1.0f));
+	Model = rotate(Model, radians(58.0f), vec3(1.0f, 0.0f, 1.0f));
+	mat4 MVP = Projection * View * Model;
+	GLuint MatrixID = glGetUniformLocation(ShaderProgram, "MVP");
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 	// Main Loop //
 	while (!glfwWindowShouldClose(window))
 	{
@@ -94,10 +104,11 @@ int main()
 		glBindVertexArray(VAO);
 		//Dessiner le triangle :
 		glClear(GL_COLOR_BUFFER_BIT);
+		
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//En sortant de la boucle d'affichage, on procede au nettoyage :
-		
-		
+
 		
 
 
@@ -111,7 +122,7 @@ int main()
 
 
 
-	// finishing //
+	// Destruction de la fenetre
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
